@@ -1,79 +1,34 @@
-let highestZ = 1;
+<script>
+    var paper = document.getElementById('paper image');
 
-class Paper {
-  holdingPaper = false;
-  mouseTouchX = 0;
-  mouseTouchY = 0;
-  mouseX = 0;
-  mouseY = 0;
-  prevMouseX = 0;
-  prevMouseY = 0;
-  velX = 0;
-  velY = 0;
-  rotation = Math.random() * 30 - 15;
-  currentPaperX = 0;
-  currentPaperY = 0;
-  rotating = false;
+    var isDragging = false;
 
-  init(paper) {
-    document.addEventListener('mousemove', (e) => {
-      if(!this.rotating) {
-        this.mouseX = e.clientX;
-        this.mouseY = e.clientY;
-        
-        this.velX = this.mouseX - this.prevMouseX;
-        this.velY = this.mouseY - this.prevMouseY;
-      }
-        
-      const dirX = e.clientX - this.mouseTouchX;
-      const dirY = e.clientY - this.mouseTouchY;
-      const dirLength = Math.sqrt(dirX*dirX+dirY*dirY);
-      const dirNormalizedX = dirX / dirLength;
-      const dirNormalizedY = dirY / dirLength;
+    paper.addEventListener('mousedown', startDrag);
+    paper.addEventListener('mouseup', endDrag);
+    paper.addEventListener('mousemove', drag);
 
-      const angle = Math.atan2(dirNormalizedY, dirNormalizedX);
-      let degrees = 180 * angle / Math.PI;
-      degrees = (360 + Math.round(degrees)) % 360;
-      if(this.rotating) {
-        this.rotation = degrees;
-      }
+    paper.addEventListener('touchstart', startDrag);
+    paper.addEventListener('touchend', endDrag);
+    paper.addEventListener('touchmove', drag);
 
-      if(this.holdingPaper) {
-        if(!this.rotating) {
-          this.currentPaperX += this.velX;
-          this.currentPaperY += this.velY;
+    function startDrag(e) {
+        e.preventDefault(); // Prevent default behavior to avoid issues with touch events
+        isDragging = true;
+    }
+
+    function endDrag() {
+        isDragging = false;
+    }
+
+    function drag(e) {
+        if (isDragging) {
+            var x = e.clientX || e.touches[0].clientX;
+            var y = e.clientY || e.touches[0].clientY;
+            paper.style.left = x - paper.clientWidth / 2 + 'px';
+            paper.style.top = y - paper.clientHeight / 2 + 'px';
         }
-        this.prevMouseX = this.mouseX;
-        this.prevMouseY = this.mouseY;
-
-        paper.style.transform = `translateX(${this.currentPaperX}px) translateY(${this.currentPaperY}px) rotateZ(${this.rotation}deg)`;
-      }
-    })
-
-    paper.addEventListener('mousedown', (e) => {
-      if(this.holdingPaper) return; 
-      this.holdingPaper = true;
-      
-      paper.style.zIndex = highestZ;
-      highestZ += 1;
-      
-      if(e.button === 0) {
-        this.mouseTouchX = this.mouseX;
-        this.mouseTouchY = this.mouseY;
-        this.prevMouseX = this.mouseX;
-        this.prevMouseY = this.mouseY;
-      }
-      if(e.button === 2) {
-        this.rotating = true;
-      }
-    });
-    window.addEventListener('mouseup', () => {
-      this.holdingPaper = false;
-      this.rotating = false;
-    });
-  }
-}
-
+    }
+</script>
 const papers = Array.from(document.querySelectorAll('.paper'));
 
 papers.forEach(paper => {
